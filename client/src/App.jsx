@@ -89,7 +89,7 @@ function App() {
   return <main className="app-shell">
     <div className="ambient ambient-one" /><div className="ambient ambient-two" />
     <header className="topbar">
-      <a className="brand" href="/" aria-label="RepoLens home"><span className="brand-mark"><Icon name="spark" size={17} /></span>RepoLens</a>
+      <a className="brand" href="/" aria-label="RepoLens home"><span className="brand-mark"><Icon name="spark" size={17} /></span>Github Assistant</a>
       <span className="topbar-note"><span className="pulse" />AI repository companion</span>
     </header>
 

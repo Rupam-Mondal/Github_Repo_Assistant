@@ -1,5 +1,5 @@
 # Github_Smart_Assistant
-Github Smart Assistant is an AI-powered GitHub Repository Assistant that lets you chat with any public GitHub repository. Simply provide a repository URL, and RepoLens clones the project, indexes the codebase using Retrieval-Augmented Generation ```(RAG)```, stores embeddings in Qdrant, and answers questions grounded in the repository context.
+Github Smart Assistant is an AI-powered GitHub Repository Assistant that lets you chat with any public GitHub repository. Simply provide a repository URL, and this app clones the project, indexes the codebase using Retrieval-Augmented Generation ```(RAG)```, stores embeddings in Qdrant, and answers questions grounded in the repository context.
 ---
 
 ## ✨ Features
