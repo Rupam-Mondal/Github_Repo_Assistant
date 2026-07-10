@@ -5,9 +5,19 @@ export async function questionController(req , res){
         const question = req?.body?.question;
         const repoId = req?.body?.repoId;
 
-        console.log(repoId)
+        if (typeof repoId !== "string" || !repoId.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "repoId is required",
+            });
+        }
 
-        if(!question) throw new Error("Question is undefined");
+        if (typeof question !== "string" || !question.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Question is required",
+            });
+        }
 
         const result = await questionService(repoId ,question);
 
@@ -17,7 +27,7 @@ export async function questionController(req , res){
             data:result
         })
     } catch (error) {
-        return res.json({
+        return res.status(500).json({
             success: false,
             message: `something went wrong :- ${error.message}`
         })

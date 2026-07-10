@@ -7,8 +7,31 @@ const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 })
 
+const collectionName = "github_project";
+const repoIdPayloadKey = "metadata.repoId";
+
+async function ensureRepoIdIndex(vectorStore) {
+    const collection = await vectorStore.client.getCollection(collectionName);
+
+    if (collection.payload_schema?.[repoIdPayloadKey]) return;
+
+    await vectorStore.client.createPayloadIndex(collectionName, {
+        field_name: repoIdPayloadKey,
+        field_schema: "keyword",
+        wait: true,
+    });
+}
+
 export async function questionService(repoId , question){
     try {
+        if (typeof repoId !== "string" || !repoId.trim()) {
+            throw new Error("repoId is required");
+        }
+
+        if (typeof question !== "string" || !question.trim()) {
+            throw new Error("Question is required");
+        }
+
         const embeddings = new OpenAIEmbeddings({
             model:'text-embedding-3-small',
             apiKey:process.env.OPENAI_API_KEY
@@ -19,23 +42,27 @@ export async function questionService(repoId , question){
             {
                 url: process.env.QDRUNT_LINK,
                 apiKey: process.env.QDRUNT_KEY,
-                collectionName: "github_project",
+                collectionName,
             }
         )
+        await ensureRepoIdIndex(vectorStore);
+
         const vectorRetriver = vectorStore.asRetriever({
             k : 5,
             filter:{
                 must:[
                     {
-                        key:"metadata.repoId",
+                        key: repoIdPayloadKey,
                         match:{
-                            value:repoId
+                            value: repoId.trim()
                         }
                     }
                 ]
             }
         });
         const result = await vectorRetriver.invoke(question);
+
+        console.log(result)
 
         const System_Prompt = `
         You are an expert in answering user quesry on the context provided to you
