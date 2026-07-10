@@ -6,14 +6,17 @@ import dotenv from 'dotenv';
 import fs from "fs/promises";
 import { Clone } from "../Tools/CloneRepo.js";
 import { ReadRepository } from '../Tools/ReadRepo.js';
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
 export async function UrlService(url){
     try {
         const clonepath = await Clone(url);
+        const repoId = uuidv4();
+        
 
-        const documents = await ReadRepository(clonepath);
+        const documents = await ReadRepository(repoId , clonepath);
         console.log(documents.length);
 
         const splitter = new RecursiveCharacterTextSplitter({
@@ -49,6 +52,7 @@ export async function UrlService(url){
         return {
             files: documents.length,
             chunks: chunks.length,
+            repoId
         }
         
         

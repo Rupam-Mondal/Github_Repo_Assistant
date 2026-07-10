@@ -2,6 +2,7 @@ import recursive from "recursive-readdir";
 import fs from "fs/promises";
 import path from "path";
 import { Document } from "@langchain/core/documents";
+import { v4 as uuidv4 } from "uuid";
 
 const allowedExtensions = [
   ".js",
@@ -31,8 +32,9 @@ const ignoredFolders = [
   "coverage",
 ];
 
-export async function ReadRepository(repoPath) {
+export async function ReadRepository(repoId , repoPath) {
   const files = await recursive(repoPath, ignoredFolders);
+  
 
   const documents = [];
 
@@ -48,6 +50,7 @@ export async function ReadRepository(repoPath) {
         new Document({
           pageContent: content,
           metadata: {
+            repoId,
             source: file,
             extension: ext,
           },

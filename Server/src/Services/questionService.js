@@ -7,7 +7,7 @@ const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 })
 
-export async function questionService(question){
+export async function questionService(repoId , question){
     try {
         const embeddings = new OpenAIEmbeddings({
             model:'text-embedding-3-small',
@@ -22,7 +22,19 @@ export async function questionService(question){
                 collectionName: "github_project",
             }
         )
-        const vectorRetriver = vectorStore.asRetriever({k : 5});
+        const vectorRetriver = vectorStore.asRetriever({
+            k : 5,
+            filter:{
+                must:[
+                    {
+                        key:"metadata.repoId",
+                        match:{
+                            value:repoId
+                        }
+                    }
+                ]
+            }
+        });
         const result = await vectorRetriver.invoke(question);
 
         const System_Prompt = `
