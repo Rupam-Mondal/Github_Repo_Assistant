@@ -22,6 +22,7 @@ function Icon({ name, size = 20 }) {
 function App() {
   const [repoUrl, setRepoUrl] = useState('')
   const [connectedRepo, setConnectedRepo] = useState('')
+  const [repoId, setRepoId] = useState('')
   const [isCloning, setIsCloning] = useState(false)
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState([])
@@ -44,7 +45,11 @@ function App() {
     try {
       const response = await api.post('/cloneRepo', { url })
       if (response.data?.success === false) throw new Error(response.data?.message)
+      const clonedRepoId = response.data?.data?.repoId
+    console.log(clonedRepoId)
+      if (!clonedRepoId) throw new Error('The repository was connected, but no repository ID was returned.')
       setConnectedRepo(url)
+      setRepoId(clonedRepoId)
       setMessages([])
       setRepoUrl('')
       setTimeout(() => questionRef.current?.focus(), 50)
@@ -59,12 +64,16 @@ function App() {
     event.preventDefault()
     const value = question.trim()
     if (!value || isAsking) return
+    if (!repoId) {
+      setError('Connect a repository before asking a question.')
+      return
+    }
     setError('')
     setMessages((current) => [...current, { role: 'user', text: value }])
     setQuestion('')
     setIsAsking(true)
     try {
-      const response = await api.post('/askquestion', { question: value })
+      const response = await api.post('/askquestion', { repoId, question: value })
       if (response.data?.success === false) throw new Error(response.data?.message)
       setMessages((current) => [...current, { role: 'assistant', text: response.data?.data || response.data?.message || 'I could not find an answer.' }])
     } catch (err) {
@@ -95,7 +104,7 @@ function App() {
       {error && <p className="form-error"><Icon name="close" size={15} /> {error}</p>}
       <div className="privacy-note"><span className="lock">⌁</span> Your questions are grounded in the connected repository.</div>
     </section> : <section className="workspace">
-      <div className="repo-strip"><div className="repo-icon"><Icon name="github" size={19} /></div><div><span>CONNECTED REPOSITORY</span><strong>{connectedRepo.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\.git$/, '')}</strong></div><button className="change-repo" onClick={() => { setConnectedRepo(''); setMessages([]); setError('') }}>Change</button></div>
+      <div className="repo-strip"><div className="repo-icon"><Icon name="github" size={19} /></div><div><span>CONNECTED REPOSITORY</span><strong>{connectedRepo.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\.git$/, '')}</strong></div><button className="change-repo" onClick={() => { setConnectedRepo(''); setRepoId(''); setMessages([]); setError('') }}>Change</button></div>
       <div className="conversation" ref={conversationRef} aria-live="polite">
         {messages.length === 0 ? <div className="empty-state"><div className="empty-icon"><Icon name="spark" size={24} /></div><h2>What would you like to know?</h2><p>Ask anything about this repository. I’ll search through the code to find the answer.</p><div className="suggestions">{suggestions.map((item) => <button key={item} onClick={() => setQuestion(item)}>{item}<Icon name="arrow" size={15} /></button>)}</div></div> : <div className="messages">{messages.map((message, index) => <article className={`message ${message.role} ${message.error ? 'message-error' : ''}`} key={index}><div className="avatar">{message.role === 'user' ? 'You' : <Icon name="spark" size={16} />}</div><div className="message-body">{message.role === 'assistant' && <span className="message-label">REPOLENS</span>}<p>{message.text}</p></div></article>)}{isAsking && <article className="message assistant"><div className="avatar"><Icon name="spark" size={16} /></div><div className="typing"><i /><i /><i /></div></article>}</div>}
       </div>

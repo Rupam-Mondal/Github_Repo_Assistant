@@ -48,7 +48,7 @@ export async function questionService(repoId , question){
         await ensureRepoIdIndex(vectorStore);
 
         const vectorRetriver = vectorStore.asRetriever({
-            k : 5,
+            k : 10,
             filter:{
                 must:[
                     {
